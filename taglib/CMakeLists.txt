@@ -24,10 +24,15 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/s3m
   ${CMAKE_CURRENT_SOURCE_DIR}/it
   ${CMAKE_CURRENT_SOURCE_DIR}/xm
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsf
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsdiff
+  ${CMAKE_SOURCE_DIR}/3rdparty
 )
 
 if(ZLIB_FOUND)
   include_directories(${ZLIB_INCLUDE_DIR})
+elseif(HAVE_ZLIB_SOURCE)
+  include_directories(${ZLIB_SOURCE})
 endif()
 
 set(tag_HDRS
@@ -35,7 +40,7 @@ set(tag_HDRS
   fileref.h
   audioproperties.h
   taglib_export.h
-  ${CMAKE_BINARY_DIR}/taglib_config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/../taglib_config.h
   toolkit/taglib.h
   toolkit/tstring.h
   toolkit/tlist.h
@@ -67,16 +72,21 @@ set(tag_HDRS
   mpeg/id3v2/id3v2tag.h
   mpeg/id3v2/frames/attachedpictureframe.h
   mpeg/id3v2/frames/commentsframe.h
+  mpeg/id3v2/frames/eventtimingcodesframe.h
   mpeg/id3v2/frames/generalencapsulatedobjectframe.h
   mpeg/id3v2/frames/ownershipframe.h
   mpeg/id3v2/frames/popularimeterframe.h
   mpeg/id3v2/frames/privateframe.h
   mpeg/id3v2/frames/relativevolumeframe.h
+  mpeg/id3v2/frames/synchronizedlyricsframe.h
   mpeg/id3v2/frames/textidentificationframe.h
   mpeg/id3v2/frames/uniquefileidentifierframe.h
   mpeg/id3v2/frames/unknownframe.h
   mpeg/id3v2/frames/unsynchronizedlyricsframe.h
   mpeg/id3v2/frames/urllinkframe.h
+  mpeg/id3v2/frames/chapterframe.h
+  mpeg/id3v2/frames/tableofcontentsframe.h
+  mpeg/id3v2/frames/podcastframe.h
   ogg/oggfile.h
   ogg/oggpage.h
   ogg/oggpageheader.h
@@ -130,6 +140,11 @@ set(tag_HDRS
   s3m/s3mproperties.h
   xm/xmfile.h
   xm/xmproperties.h
+  dsf/dsffile.h
+  dsf/dsfproperties.h
+  dsdiff/dsdifffile.h
+  dsdiff/dsdiffproperties.h
+  dsdiff/dsdiffdiintag.h
 )
 
 set(mpeg_SRCS
@@ -157,16 +172,21 @@ set(id3v2_SRCS
 set(frames_SRCS
   mpeg/id3v2/frames/attachedpictureframe.cpp
   mpeg/id3v2/frames/commentsframe.cpp
+  mpeg/id3v2/frames/eventtimingcodesframe.cpp
   mpeg/id3v2/frames/generalencapsulatedobjectframe.cpp
   mpeg/id3v2/frames/ownershipframe.cpp
   mpeg/id3v2/frames/popularimeterframe.cpp
   mpeg/id3v2/frames/privateframe.cpp
   mpeg/id3v2/frames/relativevolumeframe.cpp
+  mpeg/id3v2/frames/synchronizedlyricsframe.cpp
   mpeg/id3v2/frames/textidentificationframe.cpp
   mpeg/id3v2/frames/uniquefileidentifierframe.cpp
   mpeg/id3v2/frames/unknownframe.cpp
   mpeg/id3v2/frames/unsynchronizedlyricsframe.cpp
   mpeg/id3v2/frames/urllinkframe.cpp
+  mpeg/id3v2/frames/chapterframe.cpp
+  mpeg/id3v2/frames/tableofcontentsframe.cpp
+  mpeg/id3v2/frames/podcastframe.cpp
 )
 
 set(ogg_SRCS
@@ -280,6 +300,17 @@ set(xm_SRCS
   xm/xmproperties.cpp
 )
 
+set(dsf_SRCS
+  dsf/dsffile.cpp
+  dsf/dsfproperties.cpp
+)
+
+set(dsdiff_SRCS
+  dsdiff/dsdifffile.cpp
+  dsdiff/dsdiffproperties.cpp
+  dsdiff/dsdiffdiintag.cpp
+)
+
 set(toolkit_SRCS
   toolkit/tstring.cpp
   toolkit/tstringlist.cpp
@@ -293,24 +324,37 @@ set(toolkit_SRCS
   toolkit/tpropertymap.cpp
   toolkit/trefcounter.cpp
   toolkit/tdebuglistener.cpp
-  toolkit/unicode.cpp
+  toolkit/tzlib.cpp
 )
+
+if(HAVE_ZLIB_SOURCE)
+  set(zlib_SRCS
+    ${ZLIB_SOURCE}/adler32.c
+    ${ZLIB_SOURCE}/crc32.c
+    ${ZLIB_SOURCE}/inffast.c
+    ${ZLIB_SOURCE}/inflate.c
+    ${ZLIB_SOURCE}/inftrees.c
+    ${ZLIB_SOURCE}/zutil.c
+  )
+endif()
 
 set(tag_LIB_SRCS
   ${mpeg_SRCS} ${id3v1_SRCS} ${id3v2_SRCS} ${frames_SRCS} ${ogg_SRCS}
   ${vorbis_SRCS} ${oggflacs_SRCS} ${mpc_SRCS} ${ape_SRCS} ${toolkit_SRCS} ${flacs_SRCS}
   ${wavpack_SRCS} ${speex_SRCS} ${trueaudio_SRCS} ${riff_SRCS} ${aiff_SRCS} ${wav_SRCS}
-  ${asf_SRCS} ${mp4_SRCS} ${mod_SRCS} ${s3m_SRCS} ${it_SRCS} ${xm_SRCS} ${opus_SRCS}
+  ${asf_SRCS} ${mp4_SRCS} ${mod_SRCS} ${s3m_SRCS} ${it_SRCS} ${xm_SRCS} ${opus_SRCS} ${dsf_SRCS} ${dsdiff_SRCS}
+  ${zlib_SRCS}
   tag.cpp
   tagunion.cpp
   fileref.cpp
   audioproperties.cpp
+  tagutils.cpp
 )
 
 add_library(tag ${tag_LIB_SRCS} ${tag_HDRS})
 
-if(ZLIB_FOUND)
-	target_link_libraries(tag ${ZLIB_LIBRARIES})
+if(HAVE_ZLIB AND NOT HAVE_ZLIB_SOURCE)
+  target_link_libraries(tag ${ZLIB_LIBRARIES})
 endif()
 
 set_target_properties(tag PROPERTIES
@@ -321,15 +365,25 @@ set_target_properties(tag PROPERTIES
   LINK_INTERFACE_LIBRARIES ""
   PUBLIC_HEADER "${tag_HDRS}"
 )
+if(VISIBILITY_HIDDEN)
+	set_target_properties(tag PROPERTIES C_VISIBILITY_PRESET hidden
+	)
+endif()
+
 if(BUILD_FRAMEWORK)
-  set_target_properties(tag PROPERTIES FRAMEWORK TRUE)
+  unset(INSTALL_NAME_DIR)
+  set_target_properties(tag PROPERTIES 
+      FRAMEWORK TRUE
+      MACOSX_RPATH 1
+      VERSION "A"
+      SOVERSION "A"
+      )
 endif()
 
 install(TARGETS tag
-	FRAMEWORK DESTINATION ${FRAMEWORK_INSTALL_DIR}
-	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
-	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
-	PUBLIC_HEADER DESTINATION ${INCLUDE_INSTALL_DIR}/taglib
+  FRAMEWORK DESTINATION ${FRAMEWORK_INSTALL_DIR}
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+  RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+  ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+  PUBLIC_HEADER DESTINATION ${INCLUDE_INSTALL_DIR}/taglib
 )
-

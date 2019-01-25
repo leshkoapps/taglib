@@ -86,8 +86,8 @@ namespace TagLib {
         /*!
          * Returns the Tag for this file.
          *
-         * \note This always returns a valid pointer regardless of whether or not 
-         * the file on disk has an ID3v2 tag.  Use hasID3v2Tag() to check if the file 
+         * \note This always returns a valid pointer regardless of whether or not
+         * the file on disk has an ID3v2 tag.  Use hasID3v2Tag() to check if the file
          * on disk actually has an ID3v2 tag.
          *
          * \see hasID3v2Tag()
@@ -126,11 +126,21 @@ namespace TagLib {
          */
         bool hasID3v2Tag() const;
 
+        /*!
+         * Check if the given \a stream can be opened as an AIFF file.
+         *
+         * \note This method is designed to do a quick check.  The result may
+         * not necessarily be correct.
+         */
+        static bool isSupported(IOStream *stream);
+
       private:
         File(const File &);
         File &operator=(const File &);
 
-        void read(bool readProperties, Properties::ReadStyle propertiesStyle);
+        void read(bool readProperties);
+
+        friend class Properties;
 
         class FilePrivate;
         FilePrivate *d;

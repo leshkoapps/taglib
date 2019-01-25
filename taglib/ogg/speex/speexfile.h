@@ -106,15 +106,27 @@ namespace TagLib {
          */
         virtual Properties *audioProperties() const;
 
-
-
+        /*!
+         * Save the file.
+         *
+         * This returns true if the save was successful.
+         */
         virtual bool save();
+
+        /*!
+         * Returns whether or not the given \a stream can be opened as a Speex
+         * file.
+         *
+         * \note This method is designed to do a quick check.  The result may
+         * not necessarily be correct.
+         */
+        static bool isSupported(IOStream *stream);
 
       private:
         File(const File &);
         File &operator=(const File &);
 
-        void read(bool readProperties, Properties::ReadStyle propertiesStyle);
+        void read(bool readProperties);
 
         class FilePrivate;
         FilePrivate *d;

@@ -1,3 +1,28 @@
+/***************************************************************************
+    copyright           : (C) 2007 by Lukas Lalinsky
+    email               : lukas@oxygene.sk
+ ***************************************************************************/
+
+/***************************************************************************
+ *   This library is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU Lesser General Public License version   *
+ *   2.1 as published by the Free Software Foundation.                     *
+ *                                                                         *
+ *   This library is distributed in the hope that it will be useful, but   *
+ *   WITHOUT ANY WARRANTY; without even the implied warranty of            *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+ *   Lesser General Public License for more details.                       *
+ *                                                                         *
+ *   You should have received a copy of the GNU Lesser General Public      *
+ *   License along with this library; if not, write to the Free Software   *
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA         *
+ *   02110-1301  USA                                                       *
+ *                                                                         *
+ *   Alternatively, this file is available under the Mozilla Public        *
+ *   License Version 1.1.  You may obtain a copy of the License at         *
+ *   http://www.mozilla.org/MPL/                                           *
+ ***************************************************************************/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -11,6 +36,7 @@
 #include <sys/stat.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <string>
 #include <fstream>
@@ -26,22 +52,21 @@ inline string testFilePath(const string &filename)
 
 inline string copyFile(const string &filename, const string &ext)
 {
-  string newname = string(tempnam(NULL, NULL)) + ext;
-  string oldname = testFilePath(filename) + ext;
+  char testFileName[1024];
+
 #ifdef _WIN32
-  CopyFile(oldname.c_str(), newname.c_str(), FALSE);
-  SetFileAttributes(newname.c_str(), GetFileAttributes(newname.c_str()) & ~FILE_ATTRIBUTE_READONLY);
+  char tempDir[MAX_PATH + 1];
+  GetTempPathA(sizeof(tempDir), tempDir);
+  wsprintfA(testFileName, "%s\\taglib-test%s", tempDir, ext.c_str());
 #else
-  char buffer[4096];
-  int bytes;
-  int inf = open(oldname.c_str(), O_RDONLY);
-  int outf = open(newname.c_str(), O_CREAT | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
-  while((bytes = read(inf, buffer, sizeof(buffer))) > 0)
-    write(outf, buffer, bytes);
-  close(outf);
-  close(inf);
+  snprintf(testFileName, sizeof(testFileName), "/%s/taglib-test%s", P_tmpdir, ext.c_str());
 #endif
-  return newname;
+
+  string sourceFileName = testFilePath(filename) + ext;
+  ifstream source(sourceFileName.c_str(), std::ios::binary);
+  ofstream destination(testFileName, std::ios::binary);
+  destination << source.rdbuf();
+  return string(testFileName);
 }
 
 inline void deleteFile(const string &filename)
@@ -72,19 +97,40 @@ inline bool fileEqual(const string &filename1, const string &filename2)
 
     if(n1 == 0) break;
 
-    if(memcmp(buf1, buf2, n1) != 0) return false;
+    if(memcmp(buf1, buf2, static_cast<size_t>(n1)) != 0) return false;
   }
 
   return stream1.good() == stream2.good();
 }
 
+#ifdef TAGLIB_STRING_H
+
+namespace TagLib {
+
+  inline String longText(size_t length, bool random = false)
+  {
+    const wchar_t chars[] = L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+
+    std::wstring text(length, L'X');
+
+    if(random) {
+      for(size_t i = 0; i < length; ++i)
+        text[i] = chars[rand() % 53];
+    }
+
+    return String(text);
+  }
+}
+
+#endif
+
 class ScopedFileCopy
 {
 public:
-  ScopedFileCopy(const string &filename, const string &ext, bool deleteFile=true)
+  ScopedFileCopy(const string &filename, const string &ext, bool deleteFile=true) :
+    m_deleteFile(deleteFile),
+    m_filename(copyFile(filename, ext))
   {
-    m_deleteFile = deleteFile;
-    m_filename = copyFile(filename, ext);
   }
 
   ~ScopedFileCopy()
@@ -93,12 +139,12 @@ public:
       deleteFile(m_filename);
   }
 
-  string fileName()
+  string fileName() const
   {
     return m_filename;
   }
 
 private:
-  bool m_deleteFile;
-  string m_filename;
+  const bool m_deleteFile;
+  const string m_filename;
 };

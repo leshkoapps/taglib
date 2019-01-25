@@ -1,3 +1,137 @@
+============================
+
+ * Added support for DSF and DSDIFF files.
+ * Added support for WinRT.
+ * Added support for classical music tags of iTunes 12.5.
+ * Added support for file descriptor to FileStream.
+ * Added support for 'cmID', 'purl', 'egid' MP4 atoms.
+ * Enabled FileRef to detect file types based on the stream content.
+ * Dropped support for Windows 9x and NT 4.0 or older.
+ * Check for mandatory header objects in ASF files.
+ * Fixed OOB read on invalid Ogg FLAC files (CVE-2018-11439).
+ * Fixed handling of empty MPEG files.
+ * Fixed reading MP4 atoms with zero length.
+ * Fixed reading FLAC files with zero-sized seektables.
+ * Fixed handling of lowercase field names in Vorbis Comments.
+ * Fixed handling of 'rate' atoms in MP4 files.
+ * Fixed handling of invalid UTF-8 sequences.
+ * Fixed possible file corruptions when saving Ogg files.
+ * TableOfContentsFrame::toString() improved.
+ * UserTextIdentificationFrame::toString() improved.
+ * Marked FileRef::create() deprecated.
+ * Several smaller bug fixes and performance improvements.
+
+TagLib 1.11.1 (Oct 24, 2016)
+============================
+
+ * Fixed binary incompatible change in TagLib::String.
+ * Fixed reading ID3v2 CTOC frames with a lot of entries.
+ * Fixed seeking ByteVectorStream from the end.
+
+TagLib 1.11 (Apr 29, 2016)
+==========================
+
+1.11:
+
+ * Fixed reading APE items with long keys.
+ * Fixed reading ID3v2 SYLT frames when description is empty.
+
+1.11 BETA 2:
+
+ * Better handling of PCM WAV files with a 'fact' chunk.
+ * Better handling of corrupted APE tags.
+ * Efficient decoding of unsynchronized ID3v2 frames.
+ * Fixed text encoding when saving certain frames in ID3v2.3 tags.
+ * Fixed updating the size of RIFF files when removing chunks.
+ * Several smaller bug fixes and performance improvements.
+
+1.11 BETA:
+
+ * New API for creating FileRef from IOStream.
+ * Added support for ID3v2 PCST and WFED frames.
+ * Added support for pictures in XiphComment.
+ * Added String::clear().
+ * Added FLAC::File::strip() for removing non-standard tags.
+ * Added alternative functions to XiphComment::removeField().
+ * Added BUILD_BINDINGS build option.
+ * Added ENABLE_CCACHE build option.
+ * Replaced ENABLE_STATIC build option with BUILD_SHARED_LIBS.
+ * Better handling of duplicate ID3v2 tags in all kinds of files.
+ * Better handling of duplicate tag chunks in WAV files.
+ * Better handling of duplicate tag chunks in AIFF files.
+ * Better handling of duplicate Vorbis comment blocks in FLAC files.
+ * Better handling of broken MPEG audio frames.
+ * Fixed crash when calling File::properties() after strip().
+ * Fixed crash when parsing certain MPEG files.
+ * Fixed crash when saving Ogg files.
+ * Fixed possible file corruptions when saving ASF files.
+ * Fixed possible file corruptions when saving FLAC files.
+ * Fixed possible file corruptions when saving MP4 files.
+ * Fixed possible file corruptions when saving MPEG files.
+ * Fixed possible file corruptions when saving APE files.
+ * Fixed possible file corruptions when saving Musepack files.
+ * Fixed possible file corruptions when saving WavPack files.
+ * Fixed updating the comment field of Vorbis comments.
+ * Fixed reading date and time in ID3v2.3 tags.
+ * Marked ByteVector::null and ByteVector::isNull() deprecated.
+ * Marked String::null and String::isNull() deprecated.
+ * Marked XiphComment::removeField() deprecated.
+ * Marked Ogg::Page::getCopyWithNewPageSequenceNumber() deprecated. It returns null.
+ * Marked custom integer types deprecated.
+ * Many smaller bug fixes and performance improvements.
+
+TagLib 1.10 (Nov 11, 2015)
+==========================
+
+1.10:
+
+ * Added new options to the tagwriter example.
+ * Fixed self-assignment operator in some types.
+ * Fixed extraction of MP4 tag keys with an empty list.
+
+1.10 BETA:
+
+ * New API for the audio length in milliseconds.
+ * Added support for ID3v2 ETCO and SYLT frames.
+ * Added support for album artist in PropertyMap API of MP4 files.
+ * Added support for embedded frames in ID3v2 CHAP and CTOC frames.
+ * Added support for AIFF-C files.
+ * Better handling of duplicate ID3v2 tags in MPEG files.
+ * Allowed generating taglib.pc on Windows.
+ * Added ZLIB_SOURCE build option.
+ * Fixed backwards-incompatible change in TagLib::String when constructing UTF16 strings.
+ * Fixed crash when parsing certain FLAC files.
+ * Fixed crash when encoding empty strings.
+ * Fixed saving of certain XM files on OS X.
+ * Changed Xiph and APE generic getters to return space-concatenated values.
+ * Fixed possible file corruptions when removing tags from WAV files.
+ * Added support for MP4 files with 64-bit atoms in certain 64-bit environments.
+ * Prevented ID3v2 padding from being too large.
+ * Fixed crash when parsing corrupted APE files.
+ * Fixed crash when parsing corrupted WAV files.
+ * Fixed crash when parsing corrupted Ogg FLAC files.
+ * Fixed crash when parsing corrupted MPEG files.
+ * Fixed saving empty tags in WAV files.
+ * Fixed crash when parsing corrupted Musepack files.
+ * Fixed possible memory leaks when parsing AIFF and WAV files.
+ * Fixed crash when parsing corrupted MP4 files.
+ * Stopped writing empty ID3v2 frames.
+ * Fixed possible file corruptions when saving WMA files.
+ * Added TagLib::MP4::Tag::isEmpty().
+ * Added accessors to manipulate MP4 tags.
+ * Fixed crash when parsing corrupted WavPack files.
+ * Fixed seeking MPEG frames.
+ * Fixed reading FLAC files with zero-sized padding blocks.
+ * Added support for reading the encoder information of WMA files.
+ * Added support for reading the codec of WAV files.
+ * Added support for multi channel WavPack files.
+ * Added support for reading the nominal bitrate of Ogg Speex files.
+ * Added support for VBR headers in MPEG files.
+ * Marked FLAC::File::streamInfoData() deprecated. It returns an empty ByteVector.
+ * Marked FLAC::File::streamLength() deprecated. It returns zero.
+ * Fixed possible file corruptions when adding an ID3v1 tag to FLAC files.
+ * Many smaller bug fixes and performance improvements.
+
 TagLib 1.9.1 (Oct 8, 2013)
 ==========================
 
@@ -5,7 +139,7 @@ TagLib 1.9.1 (Oct 8, 2013)
  * Fixed constructing String from ByteVector.
  * Fixed compilation on MSVC with the /Zc:wchar_t- option.
  * Fixed detecting of RIFF files with invalid chunk sizes.
- * Added TagLib::MP4::PropertyMap::codec().
+ * Added TagLib::MP4::Properties::codec().
 
 TagLib 1.9 (Oct 6, 2013)
 ========================
